@@ -1,0 +1,26 @@
+name: Buildtools
+description: Buildtools for manipulating Docker
+author: https://github.com/futrli
+requirements:
+  - docker
+configuration:
+  properties:
+    aws-registry-id:
+      type: string
+    build-args:
+      type: string
+    context-path:
+      type: string
+    ecr-repository:
+      type: string
+    image-name:
+      type: string
+    tag:
+      type: string
+    task:
+      type: string
+    verbose:
+      type: string
+  required:
+    - task
+additionalProperties: false
