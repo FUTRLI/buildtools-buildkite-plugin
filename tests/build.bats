@@ -17,7 +17,7 @@ load '../lib/shared'
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_CONTEXT_PATH="./path/to/build/"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_ECR_REPOSITORY="myrepo"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_IMAGE_NAME="image"
-    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TAG="1.2.2"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TAG_VALUE="1.2.2"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TASK="build"
 
     stub aws \
@@ -46,7 +46,7 @@ load '../lib/shared'
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_CONTEXT_PATH="./path/to/build/"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_ECR_REPOSITORY="myrepo"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_IMAGE_NAME="image"
-    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TAG="1.2.2"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TAG_VALUE="1.2.2"
     export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TASK="build"
 
     stub aws \
@@ -93,4 +93,27 @@ load '../lib/shared'
 
     assert_failure 1
     assert_output --partial "Missing required attributes: aws-account-id, context-path, ecr-repository, image-name, tag"
+}
+
+@test "Build image with tag script" {
+    export BUILDKITE_JOB_ID=1
+    export BUILDKITE_PIPELINE_SLUG="branch"
+    export BUILDKITE_BUILD_NUMBER=1
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_AWS_ACCOUNT_ID="123456"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_CONTEXT_PATH="./path/to/build/"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_ECR_REPOSITORY="myrepo"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_IMAGE_NAME="image"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TAG_SCRIPT="hostname"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_TASK="build"
+    export BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_VERBOSE=on
+
+    stub hostname ": echo 1.2.2"
+    stub docker "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok"
+
+    run "$PWD/hooks/command"
+
+    unstub hostname
+    unstub docker
+    assert_success
+    assert_output --partial "docker build ok"
 }
