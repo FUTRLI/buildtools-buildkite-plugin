@@ -49,7 +49,8 @@ fi
 # If we need to run a script to derive the tag then run it
 [[ -n "${tag_script}" ]] && tag_value=$( eval "${tag_script}" )
 
-build_params=(--tag "${ecr_repository}/${image_name}:${tag_value}")
+full_image_tag="${ecr_repository}/${image_name}:${tag_value}"
+build_params=(--tag "${full_image_tag}")
 # Create --build-arg xxx command list
 while read -r arg ; do
     [[ -n "${arg:-}" ]] && build_params+=("--build-arg" "${arg}")
@@ -62,5 +63,8 @@ if [[ ${image_matching_tag_count} -gt 0 ]] ; then
     exit 0
 fi
 
-echo "+++ :docker: Building ${image_name} with tag ${tag_value}"
+echo "+++ :docker: Building ${image_name}:${tag_value}"
 run_docker build "${context_path}" "${build_params[@]}"
+
+echo "+++ :docker: Pushing ${image_name}:${tag_value} to ECR"
+run_docker push "${full_image_tag}"

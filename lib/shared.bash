@@ -3,7 +3,7 @@
 
 # Reads either a value or a list from plugin config
 function plugin_read_list() {
-  prefix_read_list "BUILDKITE_PLUGIN_BUILDKITE_BUILDTOOLS_$1"
+  prefix_read_list "BUILDKITE_PLUGIN_BUILDTOOLS_$1"
 }
 
 # Reads either a value or a list from the given env prefix
