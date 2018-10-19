@@ -1,4 +1,4 @@
-name: Buildtools
+name: Buildkite Buildtools
 description: Buildtools for manipulating Docker
 author: https://github.com/futrli
 requirements:
@@ -8,7 +8,8 @@ configuration:
     aws-registry-id:
       type: string
     build-args:
-      type: string
+      type: [ string, array ]
+      minimum: 1
     context-path:
       type: string
     ecr-repository:
@@ -16,11 +17,23 @@ configuration:
     image-name:
       type: string
     tag:
-      type: string
+      type: object
+      properties:
+        value:
+          type: string
+        script:
+          type: string
     task:
       type: string
     verbose:
       type: string
   required:
     - task
-additionalProperties: false
+  additionalProperties: false
+  dependencies:
+    aws-registry-id: [ task ]
+    build-args: [ task ]
+    context-path: [ task ]
+    ecr-repository: [ task ]
+    image-name: [ task ]
+    tag: [ task ]

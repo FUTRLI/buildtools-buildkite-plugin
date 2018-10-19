@@ -25,7 +25,9 @@ load '../lib/shared'
              --image-ids imageTag=1.2.2 \
              : echo aws batch-get-image ok"
     stub jq "'.images | length' : echo 0"
-    stub docker "build ./path/to/build/ --tag 1.2.2 --build-arg key=1 --build-arg commit=abc : echo docker build ok"
+    stub docker \
+        "build ./path/to/build/ --tag myrepo/image:1.2.2 --build-arg key=1 --build-arg commit=abc \
+            : echo docker build ok"
 
     run "$PWD/hooks/command"
 
@@ -52,7 +54,7 @@ load '../lib/shared'
             --image-ids imageTag=1.2.2 \
             : echo aws batch-get-image ok"
     stub jq "'.images | length' : echo 0"
-    stub docker "build ./path/to/build/ --tag 1.2.2 : echo docker build ok"
+    stub docker "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok"
 
     run "$PWD/hooks/command"
 
