@@ -7,11 +7,10 @@ set -ueo pipefail
 
 ecr_repository="$(plugin_read_list ECR_REPOSITORY)"
 image_name="$(plugin_read_list IMAGE_NAME)"
-tag="$(plugin_read_list TAG)"
+tag_script="$(plugin_read_list TAG_SCRIPT)"
+tag_value="$(plugin_read_list TAG_VALUE)"
 context_path="$(plugin_read_list CONTEXT_PATH)"
 aws_account_id="$(plugin_read_list AWS_ACCOUNT_ID)"
-
-env | sort
 
 # https://stackoverflow.com/questions/1527049/join-elements-of-an-array#17841619
 function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
@@ -35,7 +34,7 @@ if [[ -z "${image_name}" ]] ; then
     missing_attributes+=("image-name")
     raise=1
 fi
-if [[ -z "${tag}" ]] ; then 
+if [[ -z "${tag_script}" ]] && [[ -z "${tag_value}" ]] ; then
     missing_attributes+=("tag")
     raise=1
 fi
@@ -47,18 +46,21 @@ if [[ "${raise}" -eq 1 ]] ; then
     exit 1
 fi
 
-build_params=(--tag "${ecr_repository}/${image_name}:${tag}")
+# If we need to run a script to derive the tag then run it
+[[ -n "${tag_script}" ]] && tag_value=$( eval "${tag_script}" )
+
+build_params=(--tag "${ecr_repository}/${image_name}:${tag_value}")
 # Create --build-arg xxx command list
 while read -r arg ; do
     [[ -n "${arg:-}" ]] && build_params+=("--build-arg" "${arg}")
 done <<< "$(plugin_read_list BUILD_ARGS)"
 
-image_matching_tag_count=$(aws_check_image "${ecr_repository}" "${aws_account_id}" "${tag}")
+image_matching_tag_count=$(aws_check_image "${ecr_repository}" "${aws_account_id}" "${tag_value}")
 
 if [[ ${image_matching_tag_count} -gt 0 ]] ; then
     echo "+++ Tag ${tag} already exists on ECR. Will not continue to build."
     exit 0
 fi
 
-echo "+++ :docker: Building ${image_name} with tag ${tag}"
+echo "+++ :docker: Building ${image_name} with tag ${tag_value}"
 run_docker build "${context_path}" "${build_params[@]}"
