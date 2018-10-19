@@ -38,6 +38,17 @@ load '../lib/shared'
     unstub docker
 }
 
+@test "Missing task field should raise" {
+    export BUILDKITE_JOB_ID=1
+    export BUILDKITE_PIPELINE_SLUG="branch"
+    export BUILDKITE_BUILD_NUMBER=1
+
+    run "$PWD/hooks/command"
+
+    assert_failure
+    assert_output --partial "Missing task"
+}
+
 @test "Build image without build args" {
     export BUILDKITE_JOB_ID=1
     export BUILDKITE_PIPELINE_SLUG="branch"

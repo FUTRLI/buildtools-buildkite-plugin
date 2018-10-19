@@ -17,24 +17,17 @@ verbose="$(plugin_read_list VERBOSE)"
 export verbose
 [[ -n ${verbose} ]] && set -x
 
-tasks=()
-
 # Work out what tasks to run
-if [[ -n "$(plugin_read_list TASK)" ]]
-then
+if [[ -n "$(plugin_read_list TASK)" ]] ; then
     task="$(plugin_read_list TASK)"
-    tasks+=("${task}")
-fi
-
-# Only allow a single task (for now)
-if [[ ${#tasks[@]} -gt 1 ]] ; then
-    echo "+++ Plugin error"
-    echo "Only one command can be set"
-    exit 1
+else
+  echo "+++ Plugin error"
+  echo "Missing task"
+  exit 1
 fi
 
 # Find the task that matches the task
-if in_array "build" "${tasks[@]}" ; then
+if [[ "${task}" ==  "build" ]] ; then
     # shellcheck source=../tasks/build.bash
     . "$DIR/../tasks/build.bash"
 else
