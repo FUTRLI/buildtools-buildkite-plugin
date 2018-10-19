@@ -58,7 +58,7 @@ done <<< "$(plugin_read_list BUILD_ARGS)"
 image_matching_tag_count=$(aws_check_image "${ecr_repository}" "${aws_account_id}" "${tag_value}")
 
 if [[ ${image_matching_tag_count} -gt 0 ]] ; then
-    echo "+++ Tag ${tag} already exists on ECR. Will not continue to build."
+    echo "+++ Tag ${tag_value} already exists on ECR. Will not continue to build."
     exit 0
 fi
 
