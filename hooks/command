@@ -14,8 +14,6 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 echo "Add verbose argument to plugin to enable set -x and verbose mode"
 
-env | sort
-
 verbose="$(plugin_read_list VERBOSE)"
 export verbose
 [[ -n ${verbose} ]] && set -x
@@ -24,8 +22,8 @@ export verbose
 if [[ -n "$(plugin_read_list TASK)" ]] ; then
     task="$(plugin_read_list TASK)"
 else
-  echo "+++ Plugin error"
-  echo "Missing task"
+    echo "+++ Plugin error"
+    echo "Missing task"
   exit 1
 fi
 

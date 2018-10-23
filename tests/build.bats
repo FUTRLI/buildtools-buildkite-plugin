@@ -5,7 +5,6 @@ load '../lib/aws'
 load '../lib/docker'
 load '../lib/shared'
 
-#export BUILDKITE_PLUGIN_BUILDTOOLS_VERBOSE=on
 
 @test "Build image using build args" {
     export BUILDKITE_JOB_ID=1
@@ -21,20 +20,20 @@ load '../lib/shared'
     export BUILDKITE_PLUGIN_BUILDTOOLS_TASK="build"
 
     stub aws \
-        "ecr batch-get-image --region eu-west-1 --repository-name=myrepo --registry-id=123456 \
-             --image-ids imageTag=1.2.2 \
-             : echo aws batch-get-image ok"
-    stub jq "'.images | length' : echo 0"
+        "ecr describe-images --region eu-west-1 --repository-name myrepo --registry-id 123456 --output text \
+            --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
+    stub grep "-c 1.2.2 : echo 0"
     stub docker \
-        "build ./path/to/build/ --tag myrepo/image:1.2.2 --build-arg key=1 --build-arg commit=abc \
-            : echo docker build ok"
+        "build ./path/to/build/ --tag myrepo/image:1.2.2 --build-arg key=1 --build-arg commit=abc : echo docker build ok" \
+        "push myrepo/image:1.2.2 : echo docker push ok"
 
     run "$PWD/hooks/command"
 
     assert_success
     assert_output --partial "docker build ok"
+
     unstub aws
-    unstub jq
+    unstub grep
     unstub docker
 }
 
@@ -61,18 +60,19 @@ load '../lib/shared'
     export BUILDKITE_PLUGIN_BUILDTOOLS_TASK="build"
 
     stub aws \
-        "ecr batch-get-image --region eu-west-1 --repository-name=myrepo --registry-id=123456 \
-            --image-ids imageTag=1.2.2 \
-            : echo aws batch-get-image ok"
-    stub jq "'.images | length' : echo 0"
-    stub docker "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok"
+        "ecr describe-images --region eu-west-1 --repository-name myrepo --registry-id 123456 --output text \
+            --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
+    stub grep "-c 1.2.2 : echo 0"
+    stub docker \
+        "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok" \
+        "push myrepo/image:1.2.2 : echo docker push ok"
 
     run "$PWD/hooks/command"
 
     assert_success
     assert_output --partial "docker build ok"
     unstub aws
-    unstub jq
+    unstub grep
     unstub docker
 }
 
@@ -116,15 +116,21 @@ load '../lib/shared'
     export BUILDKITE_PLUGIN_BUILDTOOLS_IMAGE_NAME="image"
     export BUILDKITE_PLUGIN_BUILDTOOLS_TAG_SCRIPT="hostname"
     export BUILDKITE_PLUGIN_BUILDTOOLS_TASK="build"
-    export BUILDKITE_PLUGIN_BUILDTOOLS_VERBOSE=on
 
+    stub aws \
+        "ecr describe-images --region eu-west-1 --repository-name myrepo --registry-id 123456 --output text \
+            --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
     stub hostname ": echo 1.2.2"
-    stub docker "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok"
+    stub docker \
+        "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok" \
+        "push myrepo/image:1.2.2 : echo docker push ok"
 
     run "$PWD/hooks/command"
 
-    unstub hostname
-    unstub docker
     assert_success
     assert_output --partial "docker build ok"
+
+    unstub aws
+    unstub hostname
+    unstub docker
 }
