@@ -5,7 +5,7 @@
 function plugin_prompt() {
     if [[ -z "${HIDE_PROMPT:-}" ]] ; then
         echo -ne '\033[90m$\033[0m' >&2
-        printf " %q" "$@" >&2
+        printf " %s" "$@" >&2
         echo >&2
     fi
 }
