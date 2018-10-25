@@ -18,8 +18,6 @@ steps:
         id: "futrli/buildtools"
 
   - label: ":bash: Run BATS Tests"
+    command: docker-compose run --rm tests
     agents:
       queue: "f2"
-    plugins:
-      ${BUILDKITE_REPO}#${BUILDKITE_COMMIT}:
-        run: tests

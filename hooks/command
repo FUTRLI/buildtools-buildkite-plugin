@@ -5,11 +5,11 @@ set -euo pipefail
 # Path to this script
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-# shellcheck source=../lib/shared.bash
+# shellcheck source=lib/shared.bash
 . "$DIR/../lib/shared.bash"
-# shellcheck source=../lib/aws.bash
+# shellcheck source=lib/aws.bash
 . "$DIR/../lib/aws.bash"
-# shellcheck source=../lib/docker.bash
+# shellcheck source=lib/docker.bash
 . "$DIR/../lib/docker.bash"
 
 echo "Add verbose argument to plugin to enable set -x and verbose mode"
@@ -29,7 +29,7 @@ fi
 
 # Find the task that matches the task
 if [[ "${task}" ==  "build" ]] ; then
-    # shellcheck source=../tasks/build.bash
+    # shellcheck source=tasks/build.bash
     . "$DIR/../tasks/build.bash"
 else
     echo "+++ Buildtools plugin error"
