@@ -24,8 +24,9 @@ load '../lib/shared'
             --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
     stub grep "-c 1.2.2 : echo 0"
     stub docker \
-        "build ./path/to/build/ --tag myrepo/image:1.2.2 --build-arg key=1 --build-arg commit=abc : echo docker build ok" \
-        "push myrepo/image:1.2.2 : echo docker push ok"
+        "build ./path/to/build/ --tag 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 \
+            --build-arg key=1 --build-arg commit=abc : echo docker build ok" \
+        "push 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker push ok"
 
     run "$PWD/hooks/command"
 
@@ -63,8 +64,9 @@ load '../lib/shared'
             --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
     stub grep "-c 1.2.2 : echo 0"
     stub docker \
-        "build ./path/to/build/ --tag myrepo/image:1.2.2 : echo docker build ok" \
-        "push myrepo/image:1.2.2 : echo docker push ok"
+        "build ./path/to/build/ \
+            --tag 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker build ok" \
+        "push 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker push ok"
 
     run "$PWD/hooks/command"
 

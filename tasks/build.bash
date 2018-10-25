@@ -40,7 +40,10 @@ if [[ "${raise}" -eq 1 ]] ; then
     exit 1
 fi
 
-full_image_tag="${image_name}:${tag}"
+region="eu-west-1"
+ecr_address="${aws_account_id}.dkr.ecr.${region}.amazonaws.com"
+
+full_image_tag="${ecr_address}/${image_name}:${tag}"
 build_params=(--tag "${full_image_tag}")
 # Create --build-arg xxx command list
 while read -r arg ; do
@@ -53,6 +56,7 @@ if [[ ${image_matching_tag_count} -gt 0 ]] ; then
     echo "+++ Tag ${tag} already exists on ECR. Will not continue to build."
     exit 0
 fi
+
 
 echo "+++ :docker: Building ${image_name}:${tag}"
 run_docker build "${context_path}" "${build_params[@]}"
