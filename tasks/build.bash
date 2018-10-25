@@ -5,10 +5,8 @@ set -ueo pipefail
 # Build task that will build an image for the chosen repository with the chosen tag
 # Run through all images in the build property, either a single item or a list
 
-ecr_repository="$(plugin_read_list ECR_REPOSITORY)"
 image_name="$(plugin_read_list IMAGE_NAME)"
-tag_script="$(plugin_read_list TAG_SCRIPT)"
-tag_value="$(plugin_read_list TAG_VALUE)"
+tag="$(plugin_read_list TAG)"
 context_path="$(plugin_read_list CONTEXT_PATH)"
 aws_account_id="$(plugin_read_list AWS_ACCOUNT_ID)"
 
@@ -26,15 +24,11 @@ if [[ -z "${context_path}" ]] ; then
     missing_attributes+=("context-path")
     raise=1
 fi
-if [[ -z "${ecr_repository}" ]] ; then 
-    missing_attributes+=("ecr-repository")
-    raise=1
-fi
 if [[ -z "${image_name}" ]] ; then 
     missing_attributes+=("image-name")
     raise=1
 fi
-if [[ -z "${tag_script}" ]] && [[ -z "${tag_value}" ]] ; then
+if [[ -z "${tag}" ]] ; then
     missing_attributes+=("tag")
     raise=1
 fi
@@ -46,21 +40,26 @@ if [[ "${raise}" -eq 1 ]] ; then
     exit 1
 fi
 
-# If we need to run a script to derive the tag then run it
-[[ -n "${tag_script}" ]] && tag_value=$( eval "${tag_script}" )
+region="eu-west-1"
+ecr_address="${aws_account_id}.dkr.ecr.${region}.amazonaws.com"
 
-build_params=(--tag "${ecr_repository}/${image_name}:${tag_value}")
+full_image_tag="${ecr_address}/${image_name}:${tag}"
+build_params=(--tag "${full_image_tag}")
 # Create --build-arg xxx command list
 while read -r arg ; do
     [[ -n "${arg:-}" ]] && build_params+=("--build-arg" "${arg}")
 done <<< "$(plugin_read_list BUILD_ARGS)"
 
-image_matching_tag_count=$(aws_check_image "${ecr_repository}" "${aws_account_id}" "${tag_value}")
+image_matching_tag_count=$(aws_check_image "${image_name}" "${aws_account_id}" "${tag}")
 
 if [[ ${image_matching_tag_count} -gt 0 ]] ; then
-    echo "+++ Tag ${tag_value} already exists on ECR. Will not continue to build."
+    echo "+++ Tag ${tag} already exists on ECR. Will not continue to build."
     exit 0
 fi
 
-echo "+++ :docker: Building ${image_name} with tag ${tag_value}"
+
+echo "+++ :docker: Building ${image_name}:${tag}"
 run_docker build "${context_path}" "${build_params[@]}"
+
+echo "+++ :docker: Pushing ${image_name}:${tag} to ECR"
+run_docker push "${full_image_tag}"

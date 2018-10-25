@@ -5,35 +5,27 @@ requirements:
   - docker
 configuration:
   properties:
-    aws-registry-id:
+    aws-account-id:
       type: string
     build-args:
       type: [ string, array ]
       minimum: 1
     context-path:
       type: string
-    ecr-repository:
-      type: string
     image-name:
       type: string
     tag:
-      type: object
-      properties:
-        value:
-          type: string
-        script:
-          type: string
+      type: string
     task:
       type: string
     verbose:
       type: string
   required:
     - task
-  additionalProperties: false
   dependencies:
-    aws-registry-id: [ task ]
+    aws-account-id: [ task ]
     build-args: [ task ]
     context-path: [ task ]
-    ecr-repository: [ task ]
     image-name: [ task ]
     tag: [ task ]
+  additionalProperties: false

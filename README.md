@@ -5,28 +5,24 @@ A plugin for running common commands across Buildkite pipelines.
 Heavily integrated with AWS. Use in tandem with the Buildkite ECR plugin.
 
 
-**Build example**
+## Example
 
-```yaml
-plugins:
-  ecr#v1.1.4:
-    login: true
-    account_ids: 111111111111
-  futrli/buildkite-buildtools#v0.0.1:
-    task: build
-    aws-account-id: 111111111111
-    context-path: "./src/to/context"
-    ecr-repository: "myrepo"
-    image-name: "image"
-    tag: "latest"
-    build-args:
-      - foo=bar
+```yml
+steps:
+  - plugins:
+      - futrli/buildtools#v0.1.0:
+          task: build
+          aws-account-id: "111111111111"
+          build-args:
+            - foo=bar
+          context-path: "./src/to/context"
+          image-name: "repo/image"
+          tag: "latest"
 ```
 
 ## Configuration
 
 ### `task`
-
 
 Choose from the following supported tasks:
 
@@ -36,11 +32,18 @@ Choose from the following supported tasks:
 
 AWS account id to use. Will check ECR repositories under this account.
 
-### `image-repository` (used by build)
-
-The address of the image repository to use when building an image.
-
 ### `build-args` (used by build)
 
 Array of arguments passed into the docker build.
 
+### `image-name` (used by build)
+
+The short form of the repository to use for the image, for example `futrli/reports-service-api`.
+
+### `context-path` (used by build)
+
+The path to use as the build context when docker build is invoked.
+
+### `tag` (used by build)
+
+The tag that the image should use.
