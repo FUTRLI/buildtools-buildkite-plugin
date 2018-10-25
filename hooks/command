@@ -24,7 +24,7 @@ if [[ -n "$(plugin_read_list TASK)" ]] ; then
 else
     echo "+++ Plugin error"
     echo "Missing task"
-  exit 1
+    exit 1
 fi
 
 # Find the task that matches the task
