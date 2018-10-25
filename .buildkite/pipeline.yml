@@ -1,0 +1,25 @@
+steps:
+
+  - label: ":shell: Run Shellcheck"
+    agents:
+      queue: "f2"
+    plugins:
+      shellcheck#v1.1.1:
+        files:
+          - hooks/**
+          - lib/**
+          - tasks/**
+
+  - label: ":sparkles: Lint Plugin"
+    agents:
+      queue: "f2"
+    plugins:
+      plugin-linter#v2.0.0:
+        id: "futrli/buildtools"
+
+  - label: ":bash: Run BATS Tests"
+    agents:
+      queue: "f2"
+    plugins:
+      ${BUILDKITE_REPO}#${BUILDKITE_COMMIT}:
+        run: tests

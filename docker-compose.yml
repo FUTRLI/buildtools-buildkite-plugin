@@ -1,6 +1,7 @@
 # Docker Compose file for executing BATS tests
 
 version: '2'
+
 services:
   tests:
     image: buildkite/plugin-tester
@@ -8,6 +9,6 @@ services:
       - ".:/plugin:ro"
   lint:
     image: buildkite/plugin-linter
-    command: ['--id', 'futrli/buildkite-buildtools']
+    command: ['--name', 'futrli/buildtools']
     volumes:
       - ".:/plugin"
