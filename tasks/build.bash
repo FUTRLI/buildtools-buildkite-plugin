@@ -40,6 +40,34 @@ if [[ "${raise}" -eq 1 ]] ; then
     exit 1
 fi
 
+
+# Disable -e outside of the subshell; since the subshell returning a failure
+# would exit the parent shell (here) early.
+set +e
+
+(
+    # Reset bash to the default IFS
+    unset IFS
+
+    while IFS= read -rd '' token; do
+        [[ -n "$token" ]] && run_params+=("$token")
+    done < <(xargs printf '%s\0' <<< "${BUILDKITE_COMMAND}")
+
+    echo "+++ :docker: Running command >&2"
+    exec "${run_params[@]}"
+)
+
+exitcode=$?
+
+# Restore -e as an option.
+set -e
+
+if [[ $exitcode -ne 0 ]]; then
+    echo "Command failed"
+    exit $exitcode
+fi
+
+
 region="eu-west-1"
 ecr_address="${aws_account_id}.dkr.ecr.${region}.amazonaws.com"
 

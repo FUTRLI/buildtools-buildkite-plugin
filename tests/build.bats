@@ -104,3 +104,27 @@ load '../lib/shared'
     assert_failure 1
     assert_output --partial "Missing required attributes: aws-account-id, context-path, image-name, tag"
 }
+
+
+@test "Test bad command raises" {
+    export BUILDKITE_JOB_ID=1
+    export BUILDKITE_PIPELINE_SLUG="branch"
+    export BUILDKITE_BUILD_NUMBER=1
+    export BUILDKITE_COMMAND="ls -l"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_AWS_ACCOUNT_ID="123456"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_BUILD_ARGS_0="key=1"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_BUILD_ARGS_1="commit=abc"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_CONTEXT_PATH="./path/to/build/"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_IMAGE_NAME="myrepo/image"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_TAG="1.2.2"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_TASK="build"
+
+    stub ls "-l : exit 1"
+
+    run "$PWD/hooks/command"
+
+    assert_failure
+    assert_output --partial "Command failed"
+
+    unstub ls
+}
