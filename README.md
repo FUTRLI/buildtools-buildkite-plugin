@@ -9,6 +9,7 @@ Heavily integrated with AWS. Use in tandem with the Buildkite ECR plugin.
 
 ```yml
 steps:
+  - command: "export VAR=123"
   - plugins:
       - futrli/buildtools#v0.1.0:
           task: build
@@ -19,6 +20,8 @@ steps:
           image-name: "repo/image"
           tag: "latest"
 ```
+
+If `command` is defined it will be executed before the chosen task is run.
 
 ## Configuration
 
