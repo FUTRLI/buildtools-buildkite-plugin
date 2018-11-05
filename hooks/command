@@ -27,7 +27,7 @@ else
     exit 1
 fi
 
-if [[ -n "${BUILDKITE_COMMAND}" ]] ; then
+if [[ -n "${BUILDKITE_COMMAND:-}" ]] ; then
     # Disable -e outside of the subshell; since the subshell returning a failure
     # would exit the parent shell (here) early.
     set +e
