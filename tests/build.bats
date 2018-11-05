@@ -105,7 +105,6 @@ load '../lib/shared'
     assert_output --partial "Missing required attributes: aws-account-id, context-path, image-name, tag"
 }
 
-
 @test "Test bad command raises" {
     export BUILDKITE_JOB_ID=1
     export BUILDKITE_PIPELINE_SLUG="branch"
@@ -127,4 +126,34 @@ load '../lib/shared'
     assert_output --partial "Command failed"
 
     unstub ls
+}
+
+@test "Pull image before building if one exists" {
+    export BUILDKITE_JOB_ID=1
+    export BUILDKITE_PIPELINE_SLUG="branch"
+    export BUILDKITE_BUILD_NUMBER=1
+    export BUILDKITE_PLUGIN_BUILDTOOLS_AWS_ACCOUNT_ID="123456"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_CONTEXT_PATH="./path/to/build/"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_IMAGE_NAME="myrepo/image"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_TAG="1.2.2"
+    export BUILDKITE_PLUGIN_BUILDTOOLS_TASK="build"
+
+    stub aws \
+        "ecr describe-images --region eu-west-1 --repository-name myrepo/image --registry-id 123456 --output text \
+            --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' : echo ok"
+    stub grep "-c 1.2.2 : echo 1"
+    stub docker \
+        "pull 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker pull ok" \
+        "build ./path/to/build/ \
+            --tag 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker build ok" \
+        "push 123456.dkr.ecr.eu-west-1.amazonaws.com/myrepo/image:1.2.2 : echo docker push ok"
+
+    run "$PWD/hooks/command"
+
+    assert_success
+    assert_output --partial "docker pull ok"
+    assert_output --partial "docker build ok"
+    unstub aws
+    unstub grep
+    unstub docker
 }

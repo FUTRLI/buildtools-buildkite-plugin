@@ -53,8 +53,8 @@ done <<< "$(plugin_read_list BUILD_ARGS)"
 image_matching_tag_count=$(aws_check_image "${image_name}" "${aws_account_id}" "${tag}")
 
 if [[ ${image_matching_tag_count} -gt 0 ]] ; then
-    echo "+++ Tag ${tag} already exists on ECR. Will not continue to build."
-    exit 0
+    echo "Pulling existing image prior to build"
+    run_docker pull "${full_image_tag}"
 fi
 
 
