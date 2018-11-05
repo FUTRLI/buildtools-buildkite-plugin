@@ -11,7 +11,7 @@ Heavily integrated with AWS. Use in tandem with the Buildkite ECR plugin.
 steps:
   - command: "export VAR=123"
   - plugins:
-      - futrli/buildtools#v0.2.0:
+      - futrli/buildtools#v0.2.1:
           task: build
           aws-account-id: "111111111111"
           build-args:

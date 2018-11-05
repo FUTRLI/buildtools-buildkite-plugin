@@ -27,30 +27,32 @@ else
     exit 1
 fi
 
-# Disable -e outside of the subshell; since the subshell returning a failure
-# would exit the parent shell (here) early.
-set +e
+if [[ -n "${BUILDKITE_COMMAND:-}" ]] ; then
+    # Disable -e outside of the subshell; since the subshell returning a failure
+    # would exit the parent shell (here) early.
+    set +e
 
-(
-    # Reset bash to the default IFS
-    unset IFS
+    (
+        # Reset bash to the default IFS
+        unset IFS
 
-    while IFS= read -rd '' token; do
-        [[ -n "$token" ]] && run_params+=("$token")
-    done < <(xargs printf '%s\0' <<< "${BUILDKITE_COMMAND:-}")
+        while IFS= read -rd '' token; do
+            [[ -n "$token" ]] && run_params+=("$token")
+        done < <(xargs printf '%s\0' <<< "${BUILDKITE_COMMAND}")
 
-    echo "+++ :docker: Running command >&2"
-    exec "${run_params[@]}"
-)
+        echo "+++ :docker: Running command >&2"
+        exec "${run_params[@]}"
+    )
 
-exitcode=$?
+    exitcode=$?
 
-# Restore -e as an option.
-set -e
+    # Restore -e as an option.
+    set -e
 
-if [[ $exitcode -ne 0 ]]; then
-    echo "Command failed"
-    exit $exitcode
+    if [[ $exitcode -ne 0 ]]; then
+        echo "Command failed"
+        exit $exitcode
+    fi
 fi
 
 
